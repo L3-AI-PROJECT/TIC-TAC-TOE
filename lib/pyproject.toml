@@ -1,0 +1,18 @@
+[build-system]
+requires = ["setuptools>=64.0.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "tic-tac-toe"
+version = "1.0.0"
+description = "A Python implementation of the classic game Tic-Tac-Toe."
+authors = [
+  { name = "gugeorgy", email = "gueigeorgy2@gmail.com" },
+  { name = "bliu666666", email = "liubowen31415926@gmail.com" }
+]
+
+[dependencies]
+python = "^3.10"
+
+[dev-dependencies]
+pytest = "^6.2.5"
