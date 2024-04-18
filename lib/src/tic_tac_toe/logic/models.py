@@ -22,11 +22,14 @@ class Mark(str, Enum):
   
 @dataclass(frozen=True)
 class Grid:
-  cells: str = " " * 9
+  cells: str
+  dimension: int
 
-  def __post_init__(self) -> None:
-    if not re.match(r"^[\sXO]{9}$", self.cells):
-      raise ValueError("Must contain 9 cells with only X, O or space")
+  def __post_init__(self):
+    if self.dimension < 3:
+      raise ValueError("Dimension must be >=3")
+    if len(self.cells) != self.dimension * self.dimension or any(c not in Mark for c in self.cells):
+      raise ValueError("Invalid grid")
     
   @cached_property
   def x_count(self) -> int:
@@ -39,3 +42,10 @@ class Grid:
   @cached_property
   def empty_count(self) -> int:
     return self.cells.count(Mark.EMPTY.value)
+  
+@dataclass(frozen=True)
+class Move:
+  mark: Mark
+  cell_index: int
+  previous_state: "GameState"
+  next_state: "GameState"
