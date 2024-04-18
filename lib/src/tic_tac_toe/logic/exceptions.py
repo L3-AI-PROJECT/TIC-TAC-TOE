@@ -4,3 +4,7 @@
 class InvalidGameStateError(Exception):
   """Exception raised for invalid game state."""
   pass
+
+class InvalidMoveError(Exception):
+  """Exception raised for invalid move."""
+  pass
