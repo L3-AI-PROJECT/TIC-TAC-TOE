@@ -5,6 +5,8 @@ from enum import Enum
 from dataclasses import dataclass
 from functools import cached_property
 
+from tic_tac_toe.logic.validators import validate_game_state, validate_grid
+
 class Mark(str, Enum):
   CROSS = "X"
   NAUGHT = "O"
@@ -25,12 +27,7 @@ class Grid:
   dimension: int = 3
 
   def __post_init__(self):
-    if self.dimension < 3:
-      raise ValueError("Dimension must be >=3")
-    if not len(self.cells) == self.dimension ** 2:
-      raise ValueError(f"Invalid grid size: grid size must be {self.dimension ** 2}")
-    if any(c not in Mark for c in self.cells):
-      raise ValueError(f"Invalid cell value: cell value must be one of: {Mark.__members__.keys()}")
+    validate_grid(self)
     
   @cached_property
   def x_count(self) -> int:
@@ -55,6 +52,9 @@ class Move:
 class GameState:
   grid: Grid
   starting_mark: Mark = Mark.CROSS
+
+  def __post_init__(self):
+    validate_game_state(self)
 
   @cached_property
   def current_mark(self) -> Mark:
