@@ -4,6 +4,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
+  from tic_tac_toe.game.players import Player
   from tic_tac_toe.logic.models import GameState, Grid
 
 from tic_tac_toe.logic.mark import Mark
@@ -53,7 +54,9 @@ def validate_move(game_state: GameState, index: int) -> None:
   # if index not in game_state.possible_moves:
   #   raise InvalidMoveError(f"Invalid move: cell[{index}] is not neighbor of an existing mark")
 
-
+def validate_player(player1: Player, player2: Player) -> None:
+  if player1.mark is player2.mark:
+    raise ValueError("Both players must use different marks")
 
 
 
