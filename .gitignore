@@ -1,0 +1,24 @@
+# Ignore Python virtual environment
+venv/
+
+# Ignore Python cache files
+**/__pycache__/
+
+# Ignore all .pyc files
+**/*.pyc# Ignore Python virtual environment
+venv/
+
+# Ignore Python cache files
+**/__pycache__/
+
+# Ignore all .pyc files
+**/*.pyc
+
+# Ignore Python egg-info directories
+**/*.egg-info/
+
+# Ignore the site-packages in venv
+venv/Lib/site-packages/
+
+# Ignore the scripts in venv
+venv/Scripts/
