@@ -48,8 +48,8 @@ python -m pip install --editable lib/
 
 ## How to Run
 
-To run the console-based game, navigate to the `console/` directory in `frontend/` and use the following command:
+To run the console-based game, navigate to the `root/` directory and use the following command:
 
 ```sh
-python -m console
+python frontend/play.py
 ```

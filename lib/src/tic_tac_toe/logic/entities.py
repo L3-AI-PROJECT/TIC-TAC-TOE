@@ -1,4 +1,4 @@
-# tic_tac_toe/logic/mark.py
+# tic_tac_toe/logic/entities.py
 
 from __future__ import annotations
 
