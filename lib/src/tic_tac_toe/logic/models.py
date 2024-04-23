@@ -110,11 +110,6 @@ class Grid:
   def is_position_filled(self, index: int) -> bool:
     return self.cells[index] != Mark.EMPTY
   
-  def get_position(self, index: int) -> tuple[str, int]:
-    row = (index // self.dimension) + 1
-    column = chr((index % self.dimension) + 65)  # Convert column number to uppercase letter
-    return column, row
-  
   def generate_potential_victory_sequences(self, victory_sequence_length: int) -> list[list[int]]:
     # Get all occupied cells
     filled_positions = self.filled_positions
@@ -222,9 +217,18 @@ class GameState:
     return valid_move_indexes
 
   @cached_property
-  def get_last_move(self) ->tuple[str, int]:
-    return self.grid.get_position(self.last_move_position) if self.last_move_position is not None else None
-    
+  def get_last_move(self) -> str:
+    return self.get_move_format_from_index(self.last_move_position) if self.last_move_position is not None else None
+  
+  def get_move_format_from_index(self, index: int) -> str:
+    row = (index // self.grid.dimension) + 1 # Convert row number to 1-based index
+    column = chr((index % self.grid.dimension) + 65)  # Convert column number to uppercase letter
+    return f"{column}{row}"
+  
+  def get_position_from_move_format(self, move: str) -> int:
+    column, row = move[0], int(move[1])
+    return (row - 1) * self.grid.dimension + (ord(column) - 65)
+
   def make_move_to(self, index: int) -> Move:
     validate_player_move(self, index)
     return self.generate_move_to(index)
