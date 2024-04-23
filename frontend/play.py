@@ -4,11 +4,12 @@ from tic_tac_toe.game.engine import TicTacToe
 from tic_tac_toe.game.players import RandomComputerPlayer
 from tic_tac_toe.logic.entities import Mark
 
+from console.players import ConsolePlayer
 from console.renderers import ConsoleRenderer
 
 def main():
   game = TicTacToe(
-    player1=RandomComputerPlayer(Mark.CROSS),
+    player1=ConsolePlayer(Mark.CROSS),
     player2=RandomComputerPlayer(Mark.NAUGHT),
     renderer=ConsoleRenderer()
   )

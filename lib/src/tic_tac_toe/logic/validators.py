@@ -50,7 +50,7 @@ def validate_mark_count(winner_mark_count: int, loser_mark_count: int, winner_ma
 
 def validate_player_move(game_state: GameState, position: int) -> None:
   if game_state.grid.is_position_filled(position):
-    raise InvalidMoveError(f"Error: Invalid move. The cell at position {position} is already filled.")
+    raise InvalidMoveError(f"Error: Invalid move. The cell at position {game_state.get_move_format_from_index(position)} is already filled.")
   if game_state.has_game_started and position not in game_state.get_valid_moves:
     raise InvalidMoveError(f"Error: Invalid move. The cell at position {position} is not adjacent to an existing mark.")
 
@@ -72,4 +72,6 @@ def validate_player_mark(player: Player) -> None:
   if player.mark not in [Mark.CROSS, Mark.NAUGHT]:
     raise ValueError(f"Error: Invalid player mark. The player's mark must be either ` {Mark.CROSS.value} ` or ` {Mark.NAUGHT.value} `.")
 
-
+def validate_move_format(move: str, grid_dimension: int) -> None:
+  if len(move) != 2 or not re.match(r"^[A-{}][1-{}]$".format(chr(64 + grid_dimension), grid_dimension), move):
+    raise ValueError("Error: Invalid move. Please enter a move in the format 'A1'.")
