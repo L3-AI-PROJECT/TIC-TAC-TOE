@@ -12,6 +12,10 @@ from tic_tac_toe.logic.exceptions import InvalidGameStateError, InvalidMoveError
 
 import re
 
+def validate_starting_mark(mark: str) -> None:
+  if mark not in [Mark.CROSS.value, Mark.NAUGHT.value]:
+    raise ValueError(f"Error: Invalid mark. The starting mark must be either ` {Mark.CROSS.value} ` or ` {Mark.NAUGHT.value} `.")
+
 def validate_game_board(game_board: Grid) -> None:
   if game_board.dimension < 3:
       raise ValueError("Error: Invalid game board dimension. The dimension of the game board must be 3 or greater.")
@@ -52,7 +56,7 @@ def validate_player_move(game_state: GameState, position: int) -> None:
   if game_state.grid.is_position_filled(position):
     raise InvalidMoveError(f"Error: Invalid move. The cell at position {game_state.get_move_format_from_index(position)} is already filled.")
   if game_state.has_game_started and position not in game_state.get_valid_moves:
-    raise InvalidMoveError(f"Error: Invalid move. The cell at position {position} is not adjacent to an existing mark.")
+    raise InvalidMoveError(f"Error: Invalid move. The cell at position {game_state.get_move_format_from_index(position)} is not adjacent to an existing mark.")
 
 def validate_players(players: list[Player]) -> None:
   validate_player_counts(players)
