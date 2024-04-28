@@ -5,6 +5,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from functools import cached_property
 
+import random
+
 from tic_tac_toe.logic.entities import Mark
 from tic_tac_toe.logic.validators import validate_game_state, validate_game_board, validate_player_move
 
@@ -110,6 +112,90 @@ class Grid:
   def is_position_filled(self, index: int) -> bool:
     return self.cells[index] != Mark.EMPTY
   
+  def generate_row_sequences(self, required_mark: int, strict: bool = False) -> list[str]:
+        # Get all occupied cells
+    filled_positions = self.filled_positions
+
+    # Pre-calculate column and row numbers
+    column_numbers = [cell % self.dimension for cell in filled_positions]
+    row_numbers = [cell // self.dimension for cell in filled_positions]
+
+    sequence_beginning = min(column_numbers)
+    sequence_end = required_mark if strict else max(max(column_numbers) + 1, sequence_beginning + required_mark)
+
+    # Generate row sequences
+    row_sequences = []
+    for row in range(min(row_numbers), max(row_numbers) + 1):
+      sequence = [row * self.dimension + column for column in range(sequence_beginning, sequence_end)]
+      if any(self.cells[i] != Mark.EMPTY for i in sequence):
+        row_sequences.append("".join(self.cells[i] for i in sequence))
+    # Remove duplicates and return the list of row sequences
+    return row_sequences
+  
+  def generate_column_sequences(self, required_mark: int, strict: bool = False) -> list[str]:
+    # Get all occupied cells
+    filled_positions = self.filled_positions
+
+    # Pre-calculate column and row numbers
+    column_numbers = [cell % self.dimension for cell in filled_positions]
+    row_numbers = [cell // self.dimension for cell in filled_positions]
+
+    sequence_beginning = min(row_numbers)
+    sequence_end = required_mark if strict else max(max(row_numbers) + 1, sequence_beginning + required_mark)
+
+    # Generate column sequences
+    column_sequences = []
+    for column in range(min(column_numbers), max(column_numbers) + 1):
+      sequence = [row * self.dimension + column for row in range(sequence_beginning, sequence_end)]
+      if any(self.cells[i] != Mark.EMPTY for i in sequence):
+        column_sequences.append("".join(self.cells[i] for i in sequence))
+    # Remove duplicates and return the list of row sequences
+    return column_sequences
+  
+  def generate_diagonal_sequences(self, required_mark: int, strict: bool = False) -> list[str]:
+    # Get all occupied cells
+    filled_positions = self.filled_positions
+
+    # Pre-calculate column and row numbers
+    column_numbers = [cell % self.dimension for cell in filled_positions]
+    row_numbers = [cell // self.dimension for cell in filled_positions]
+
+    sequence_row_beginning = min(row_numbers)
+    sequence_row_end = max(max(row_numbers), sequence_row_beginning + required_mark - 1)
+    sequence_column_beginning = min(column_numbers)
+    sequence_column_end = max(max(column_numbers), sequence_column_beginning + required_mark - 1)
+
+    sequence_stop = max(1 + sequence_row_end - sequence_row_beginning, required_mark)
+
+    sequence_end = sequence_column_end + (sequence_row_end - sequence_row_beginning)
+    sequence_beginning = sequence_column_beginning - (sequence_row_end - sequence_row_beginning)
+
+    # Generate diagonal sequences
+    diagonal_sequences = []
+
+    # Helper function to generate a sequence and append it to diagonal_sequences if it contains any non-empty cells
+    def generate_sequence(col, increment):
+      if 0 <= col < self.dimension:
+        sequence = []
+        for i in range(sequence_stop):
+          res = sequence_row_beginning * self.dimension + col + i * increment
+          if res < 0 or res >= self.count:
+            break
+          sequence.append(res)
+          # sequence = [sequence_row_beginning * self.dimension + col + i * increment for i in range(end)]
+        if any(self.cells[i] != Mark.EMPTY for i in sequence):
+          diagonal_sequences.append("".join(self.cells[i] for i in sequence))
+
+    # Generate diagonal sequences right to left
+    for col in range(sequence_column_beginning, sequence_end + 1):
+      generate_sequence(col, self.dimension - 1)
+
+    # Generate diagonal sequences left to right
+    for col in range(sequence_beginning, sequence_column_end + 1):
+      generate_sequence(col, self.dimension + 1)
+    
+    return diagonal_sequences
+
   def generate_potential_victory_sequences(self, victory_sequence_length: int) -> list[list[int]]:
     # Get all occupied cells
     filled_positions = self.filled_positions
@@ -198,6 +284,18 @@ class GameState:
     return Mark(self.grid.cells[self.get_winning_sequence[0]]) if self.get_winning_sequence else None
   
   @cached_property
+  def row_sequences(self) -> list[str]:
+    return self.grid.generate_row_sequences(self.required_marks_for_win)
+
+  @cached_property
+  def column_sequences(self) -> list[str]:
+    return self.grid.generate_column_sequences(self.required_marks_for_win)
+  
+  @cached_property
+  def diagonal_sequences(self) -> list[str]:
+    return self.grid.generate_diagonal_sequences(self.required_marks_for_win)
+
+  @cached_property
   def get_winning_sequence(self) -> list[int]:
     potential_winning_sequences = self.grid.generate_potential_victory_sequences(self.required_marks_for_win)
 
@@ -208,12 +306,13 @@ class GameState:
     # If no winning sequence is found, return an empty list
     return []
   
+  def get_winning_sequence_positions(self, required_mark: int) ->  list[list[int]]:
+    return self.grid.generate_potential_victory_sequences(required_mark)
+  
   @cached_property
   def get_valid_moves(self) -> list[int]:
-    # possible_moves = []
     if not self.has_game_ended:
       valid_move_indexes = self.grid.generate_possible_moves()
-      # possible_moves = [self.generate_move_to(index) for index in valid_move_indexes]
     return valid_move_indexes
 
   @cached_property
@@ -226,12 +325,17 @@ class GameState:
     return f"{column}{row}"
   
   def get_position_from_move_format(self, move: str) -> int:
-    column, row = move[0], int(move[1])
+    column, row = move[0], int(move[1:])
     return (row - 1) * self.grid.dimension + (ord(column) - 65)
-
+  
   def make_move_to(self, index: int) -> Move:
     validate_player_move(self, index)
     return self.generate_move_to(index)
+  
+  def make_random_move(self) -> Move:
+    if self.has_game_started:
+      return self.make_move_to(random.choice(self.get_valid_moves))
+    return self.make_move_to(random.randint(0, self.grid.count - 1))
   
   def generate_move_to(self, index: int) -> Move:
     return Move(
@@ -248,14 +352,3 @@ class GameState:
         last_move_position=index
       )
     )
-
-
-
-
-
-
-
-
-
-
-

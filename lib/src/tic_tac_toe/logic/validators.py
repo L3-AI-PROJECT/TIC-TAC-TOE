@@ -77,5 +77,5 @@ def validate_player_mark(player: Player) -> None:
     raise ValueError(f"Error: Invalid player mark. The player's mark must be either ` {Mark.CROSS.value} ` or ` {Mark.NAUGHT.value} `.")
 
 def validate_move_format(move: str, grid_dimension: int) -> None:
-  if len(move) != 2 or not re.match(r"^[A-{}][1-{}]$".format(chr(64 + grid_dimension), grid_dimension), move):
+  if not re.match(r"^[A-{}]([1-9][0-9]*)$".format(chr(64 + grid_dimension)), move) or int(move[1:]) > grid_dimension:
     raise ValueError("Error: Invalid move. Please enter a move in the format 'A1'.")

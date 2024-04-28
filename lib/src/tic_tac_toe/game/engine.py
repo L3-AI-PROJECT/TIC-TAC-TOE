@@ -29,10 +29,14 @@ class TicTacToe:
     try:
       validate_starting_mark(starting_mark)
       game_state = GameState(Grid(dimension), Mark(starting_mark), required_marks_for_win)
-      while not game_state.has_game_ended:
+      while True:
         self.renderer.render(game_state)
+        if game_state.has_game_ended:
+          break
         player = self.get_current_player(game_state)
         game_state = player.make_move(game_state)
+    except KeyboardInterrupt as _:
+      self.error_handler(Exception("Error: The game was interrupted by the user."))
     except Exception as e:
       self.error_handler(e)
   
