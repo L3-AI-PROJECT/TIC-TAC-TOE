@@ -112,7 +112,7 @@ class Grid:
   def is_position_filled(self, index: int) -> bool:
     return self.cells[index] != Mark.EMPTY
   
-  def generate_row_sequences(self, required_mark: int, strict: bool = False) -> list[str]:
+  def generate_row_sequences(self, required_mark: int, strict: bool = False) -> list[list[int]]:
         # Get all occupied cells
     filled_positions = self.filled_positions
 
@@ -127,12 +127,17 @@ class Grid:
     row_sequences = []
     for row in range(min(row_numbers), max(row_numbers) + 1):
       sequence = [row * self.dimension + column for column in range(sequence_beginning, sequence_end)]
-      if any(self.cells[i] != Mark.EMPTY for i in sequence):
-        row_sequences.append("".join(self.cells[i] for i in sequence))
+      if any(i < len(self.cells) and self.cells[i] != Mark.EMPTY for i in sequence):
+        line = []
+        for i in sequence:
+          if i < len(self.cells):
+            line.append(i)
+        row_sequences.append(line)
+        # row_sequences.append("".join(self.cells[i] if i < len(self.cells) else "" for i in sequence))
     # Remove duplicates and return the list of row sequences
     return row_sequences
   
-  def generate_column_sequences(self, required_mark: int, strict: bool = False) -> list[str]:
+  def generate_column_sequences(self, required_mark: int, strict: bool = False) -> list[list[int]]:
     # Get all occupied cells
     filled_positions = self.filled_positions
 
@@ -147,12 +152,17 @@ class Grid:
     column_sequences = []
     for column in range(min(column_numbers), max(column_numbers) + 1):
       sequence = [row * self.dimension + column for row in range(sequence_beginning, sequence_end)]
-      if any(self.cells[i] != Mark.EMPTY for i in sequence):
-        column_sequences.append("".join(self.cells[i] for i in sequence))
+      if any(i < len(self.cells) and self.cells[i] != Mark.EMPTY for i in sequence):
+        line = []
+        for i in sequence:
+          if i < len(self.cells):
+            line.append(i)
+        column_sequences.append(line)
+        # column_sequences.append("".join(self.cells[i] if i < len(self.cells) else "" for i in sequence))
     # Remove duplicates and return the list of row sequences
     return column_sequences
   
-  def generate_diagonal_sequences(self, required_mark: int, strict: bool = False) -> list[str]:
+  def generate_diagonal_sequences(self, required_mark: int, strict: bool = False) -> list[list[int]]:
     # Get all occupied cells
     filled_positions = self.filled_positions
 
@@ -170,9 +180,9 @@ class Grid:
     sequence_end = sequence_column_end + (sequence_row_end - sequence_row_beginning)
     sequence_beginning = sequence_column_beginning - (sequence_row_end - sequence_row_beginning)
 
+
     # Generate diagonal sequences
     diagonal_sequences = []
-
     # Helper function to generate a sequence and append it to diagonal_sequences if it contains any non-empty cells
     def generate_sequence(col, increment):
       if 0 <= col < self.dimension:
@@ -181,10 +191,17 @@ class Grid:
           res = sequence_row_beginning * self.dimension + col + i * increment
           if res < 0 or res >= self.count:
             break
+          index = res % self.dimension
           sequence.append(res)
+          if index == 0 or index == self.dimension:
+            break
           # sequence = [sequence_row_beginning * self.dimension + col + i * increment for i in range(end)]
         if any(self.cells[i] != Mark.EMPTY for i in sequence):
-          diagonal_sequences.append("".join(self.cells[i] for i in sequence))
+          line = []
+          for i in sequence:
+            if i < len(self.cells):
+              line.append(i)
+          diagonal_sequences.append(line)
 
     # Generate diagonal sequences right to left
     for col in range(sequence_column_beginning, sequence_end + 1):
@@ -283,37 +300,83 @@ class GameState:
   def get_winner(self) -> Mark | None:
     return Mark(self.grid.cells[self.get_winning_sequence[0]]) if self.get_winning_sequence else None
   
+  def fill_sequences(self, sequence: list[int]) -> str:
+    return "".join(self.grid.cells[i] if i < len(self.grid.cells) else "" for i in sequence)
+
   @cached_property
-  def row_sequences(self) -> list[str]:
+  def generate_sequences(self) -> list[str]:
+    sequences = []
+
+    for row in self.row_sequences:
+      sequences.append(self.fill_sequences(row))
+    for column in self.column_sequences:
+      sequences.append(self.fill_sequences(column))
+    for diagonal in self.diagonal_sequences:
+      sequences.append(self.fill_sequences(diagonal))
+    
+    return sequences
+
+  @cached_property
+  def row_sequences(self) -> list[list[int]]:
     return self.grid.generate_row_sequences(self.required_marks_for_win)
 
   @cached_property
-  def column_sequences(self) -> list[str]:
+  def column_sequences(self) -> list[list[int]]:
     return self.grid.generate_column_sequences(self.required_marks_for_win)
   
   @cached_property
-  def diagonal_sequences(self) -> list[str]:
+  def diagonal_sequences(self) -> list[list[int]]:
     return self.grid.generate_diagonal_sequences(self.required_marks_for_win)
+
+  def ee(self, sequence: list[int], start: int, current_mark: Mark) -> list[int]:
+    winning_sequence = []
+    for i in range(start, start + self.required_marks_for_win):
+      if self.grid.cells[sequence[i]] == Mark.EMPTY.value:
+        break
+      if self.grid.cells[sequence[i]] != current_mark:
+        break
+      winning_sequence.append(sequence[i])
+    return winning_sequence
 
   @cached_property
   def get_winning_sequence(self) -> list[int]:
     potential_winning_sequences = self.grid.generate_potential_victory_sequences(self.required_marks_for_win)
+    if not self.has_game_started:
+      return []
+    
+    potential_winning_sequences = []
 
-    # Check each sequence to see if it's a winning sequence
+    potential_winning_sequences.extend(self.row_sequences)
+    potential_winning_sequences.extend(self.column_sequences)
+    potential_winning_sequences.extend(self.diagonal_sequences)
+
     for sequence in potential_winning_sequences:
-      if all(self.grid.cells[i] == self.grid.cells[sequence[0]] for i in sequence):
-        return sequence  # Return the winning sequence
-    # If no winning sequence is found, return an empty list
+      # check if there is a winning sequence of required length
+      if len(sequence) < self.required_marks_for_win:
+        continue
+      
+      for i in range(0, len(sequence), self.required_marks_for_win):
+        if i + self.required_marks_for_win > len(sequence):
+          break
+        winning_mark = Mark.CROSS
+        winning_sequence = self.ee(sequence, i, winning_mark)
+        if len(winning_sequence) == self.required_marks_for_win:
+          return winning_sequence
+        winning_sequence = self.ee(sequence, i, winning_mark.other)
+        if len(winning_sequence) == self.required_marks_for_win:
+          return winning_sequence
     return []
   
   def get_winning_sequence_positions(self, required_mark: int) ->  list[list[int]]:
     return self.grid.generate_potential_victory_sequences(required_mark)
   
   @cached_property
-  def get_valid_moves(self) -> list[int]:
+  def get_valid_moves(self) -> list[Move]:
+    valid_moves = []
     if not self.has_game_ended:
       valid_move_indexes = self.grid.generate_possible_moves()
-    return valid_move_indexes
+      valid_moves = [self.generate_move_to(index) for index in valid_move_indexes]
+    return valid_moves
 
   @cached_property
   def get_last_move(self) -> str:
@@ -334,7 +397,7 @@ class GameState:
   
   def make_random_move(self) -> Move:
     if self.has_game_started:
-      return self.make_move_to(random.choice(self.get_valid_moves))
+      return random.choice(self.get_valid_moves)
     return self.make_move_to(random.randint(0, self.grid.count - 1))
   
   def generate_move_to(self, index: int) -> Move:

@@ -6,45 +6,45 @@ def preview(grid: str, dimension: int):
     print(grid[i:i+dimension])
   print("-" * 10)
 
-dimension = 10
 
-cells = "."*34
-cells += "X" + "."*9
-cells += "X" + "."*9
-cells += "XO" + "."*10
-cells += "O" + "."*33
+from tic_tac_toe.logic.algorithms import find_best_move_minimax, find_best_move_alpha_beta
+from tic_tac_toe.logic.models import GameState, Grid, Mark, Move
+
+dimension = 6
+
+# Create a list representing the initial state of the grid
+# "." represents an empty cell
+cells = ["."] * (dimension * dimension)
+
+# Add some marks to the grid
+cells[dimension*1 + 1] = "X"
+cells[dimension*2 + 2] = "X"
+cells[dimension*3 + 3] = "X"
+cells[dimension*1 + 2] = "O"
+cells[dimension*2 + 3] = "O"
+cells[dimension*3 + 4] = "O"
+
+# Convert the list back to a string
+cells = "".join(cells)
 
 game_state = GameState(
   grid=Grid(dimension, cells), 
   initial_player_mark=Mark("X"),
-  required_marks_for_win=5
+  required_marks_for_win=4  # Adjust this value as needed
 )
 
-moves = [game_state.make_move_to(position) for position in game_state.get_valid_moves]
+def printMove(move: Move):
+  print(f"Position: {game_state.get_move_format_from_index(move.position)}")
 
+# Print the initial state of the grid
 preview(game_state.grid.cells, dimension)
-for move in moves:
-  print("Move: ", game_state.get_move_format_from_index(move.position))
-  # min_score = minimax(move, maximizer=Mark("O"),  depth=2, choose_higher_score=False)
-  min_score = minimax(move, maximizer=Mark("X"),  depth=2, choose_higher_score=True)
-  max_score = minimax(move, maximizer=Mark("O"),  depth=2, choose_higher_score=True)
-  print(f"Min Score: {min_score}\nMax Score: {max_score}")
-  preview(move.next_state.grid.cells, dimension)
 
-# best_move = find_best_move_minimax(
-#   game_state, 
-#   depth=3, 
-#   choose_higher_score=True,
-#   )
+# Find the best move using the minimax algorithm
+# best_move = find_best_move_minimax(game_state, depth=2)
 
-# print("(MAX) Best Move: " + game_state.get_move_format_from_index(best_move.position))
-# preview(best_move.next_state.grid.cells, dimension)
+# Find the best move using the alpha-beta pruning algorithm
+best_move = find_best_move_alpha_beta(game_state, depth=3)
 
-# best_move = find_best_move_minimax(
-#   game_state, 
-#   depth=3, 
-#   choose_higher_score=False,
-#   )
+# Print the best move
+printMove(best_move)
 
-# print("(MIN) Best Move: " + game_state.get_move_format_from_index(best_move.position))
-# preview(best_move.next_state.grid.cells, dimension)
