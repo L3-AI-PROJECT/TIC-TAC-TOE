@@ -56,8 +56,8 @@ python -m frontend.console
 
 Customize the game settings using the following command line arguments:
 
--   `-X`: Type of player X. Choices are "human" and "random". Default is "human".
--   `-O`: Type of player O. Choices are "human" and "random". Default is "random".
+-   `-X`: Type of player X. Choices are "human", "random", "minimax", and "alpha_beta". Default is "human".
+-   `-O`: Type of player O. Choices are "human", "random", "minimax", and "alpha_beta". Default is "random".
 -   `--starting`: The mark of the starting player. Default is "X".
 -   `--required`: The number of marks in a row required to win. Default is 3.
 -   `--dimension`: The dimension of the game grid. Default is 3.
