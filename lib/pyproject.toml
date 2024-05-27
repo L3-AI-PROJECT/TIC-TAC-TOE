@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "tic-tac-toe"
-version = "1.0.0"
+version = "1.0.1"
 description = "A Python implementation of the classic game Tic-Tac-Toe."
 authors = [
   { name = "gugeorgy", email = "gueigeorgy2@gmail.com" },
