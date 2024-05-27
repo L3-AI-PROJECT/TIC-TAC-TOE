@@ -15,8 +15,6 @@ class ConsolePlayer(Player):
         print(error)
       except InvalidMoveError as error:
         print(error)
-      except KeyboardInterrupt as error:
-        raise Exception("Error: The game was interrupted by the user.")
 
 def get_position(game_state: GameState, move: str) -> int:
   validate_move_format(move, game_state.grid.dimension)
