@@ -119,7 +119,8 @@ class MinimaxComputerPlayer(ComputerPlayer):
     Move | None: The move chosen by the Minimax algorithm, or None if no move is available.
     """
     if game_state.has_game_started:
-      return find_best_move_minimax(game_state, depth=0)
+      depth = 1 if game_state.grid.dimension > 4 else 3
+      return find_best_move_minimax(game_state, depth)
     return game_state.make_random_move()
 
 class AlphaBetaComputerPlayer(ComputerPlayer):
@@ -143,5 +144,6 @@ class AlphaBetaComputerPlayer(ComputerPlayer):
     Move | None: The move chosen by the Alpha-Beta pruning algorithm, or None if no move is available.
     """
     if game_state.has_game_started:
-      return find_best_move_alpha_beta(game_state, depth=1)
+      depth = 1 if game_state.grid.dimension > 5 else 3
+      return find_best_move_alpha_beta(game_state, depth)
     return game_state.make_random_move()

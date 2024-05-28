@@ -344,11 +344,11 @@ class GameState:
     if not self.has_game_started:
       return []
     
-    potential_winning_sequences = []
+    # potential_winning_sequences = []
 
-    potential_winning_sequences.extend(self.row_sequences)
-    potential_winning_sequences.extend(self.column_sequences)
-    potential_winning_sequences.extend(self.diagonal_sequences)
+    # potential_winning_sequences.extend(self.row_sequences)
+    # potential_winning_sequences.extend(self.column_sequences)
+    # potential_winning_sequences.extend(self.diagonal_sequences)
 
     for sequence in potential_winning_sequences:
       # check if there is a winning sequence of required length

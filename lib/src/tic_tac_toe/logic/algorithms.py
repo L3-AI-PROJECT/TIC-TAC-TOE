@@ -220,11 +220,11 @@ def evaluate_score(game_state: GameState, maximizer: Mark, heuristic: bool) -> i
   # logging.info(f'Starting evaluate_score - Move: {game_state.get_move_format_from_index(game_state.last_move_position)}')
   score = 0
   if game_state.get_winner is maximizer:
-    score = 10
+    score = 1000
   elif game_state.is_draw:
     score = 0
   elif game_state.get_winner is not None:
-    score = -10
+    score = -1000
   elif heuristic:
     score = heuristic_score(game_state, maximizer)
   # logging.info(f'Returning score: {score} - Move: {game_state.get_move_format_from_index(game_state.last_move_position)}')
@@ -250,7 +250,7 @@ def heuristic_score(game_state: GameState, maximizer: Mark) -> int:
   for sequence in game_state.generate_sequences:
     max_score += evaluate_line(sequence, maximizer, required_mark)
     min_score += evaluate_line(sequence, maximizer.other, required_mark)
-    potential_moves_score += evaluate_potential_moves(sequence, maximizer)
+    # potential_moves_score += evaluate_potential_moves(sequence, maximizer)
 
   return max_score - min_score + potential_moves_score
 
